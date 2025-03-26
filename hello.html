@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XML и XSLT Демо</title>
+</head>
+<body>
+    <h1>Каталог с книги</h1>
+    <div id="output">Зареждане...</div>
+
+    <script>
+        function loadXML(file) {
+            let xhttp = new XMLHttpRequest();
+            xhttp.open("GET", file, false);
+            xhttp.send();
+            return xhttp.responseXML;
+        }
+
+        function transformXML() {
+            let xml = loadXML("hello.xml");
+            let xsl = loadXML("hello.xsl");
+
+            if (xml && xsl) {
+                let xsltProcessor = new XSLTProcessor();
+                xsltProcessor.importStylesheet(xsl);
+                let resultDocument = xsltProcessor.transformToFragment(xml, document);
+
+                document.getElementById("output").innerHTML = "";
+                document.getElementById("output").appendChild(resultDocument);
+            } else {
+                document.getElementById("output").innerHTML = "Грешка при зареждане на XML/XSL!";
+            }
+        }
+
+        window.onload = transformXML;
+    </script>
+</body>
+</html>
