@@ -15,7 +15,7 @@ public class SimpleHttpServer {
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
         
         // Пътя към директорията с файловете
-        String folderPath = "D:/vakovsky/xampp-portable-windows-x64-8.2.4-0-VS16/xampp/htdocs/xml";
+        String folderPath = "D:/v1/xml";
 
         // Създаваме обработчик за заявките
         server.createContext("/", new HttpHandler() {
