@@ -1,0 +1,150 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Sockets;
+using System.Net;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.IO;
+
+namespace ConsoleApp5
+{
+    class Program
+    {
+        static void Main()
+        {
+            TcpListener server = new TcpListener(IPAddress.Any, 80);
+            server.Start();
+            Console.WriteLine("Сървърът стартира на порт 80...");
+
+            while (true)
+            {
+                TcpClient client = server.AcceptTcpClient();
+                Thread thread = new Thread(HandleClient);
+                thread.Start(client);
+            }
+        }
+
+        static void HandleClient(object obj)
+        {
+            TcpClient client = (TcpClient)obj;
+            NetworkStream stream = client.GetStream();
+            StreamReader reader = new StreamReader(stream, Encoding.UTF8);
+
+            string requestLine = reader.ReadLine();
+            Console.WriteLine("Получена заявка: " + requestLine);
+
+            if (requestLine.StartsWith("GET"))
+            {
+                string[] tokens = requestLine.Split(' ');
+                if (tokens.Length > 1)
+                {
+                    string requestedFile = tokens[1].TrimStart('/'); // Взимаме името на файла от URL
+                    SendFile(requestedFile, stream);
+                }
+            }
+
+            client.Close();
+        }
+
+        static void SendFile(string filePath, NetworkStream stream)
+        {
+            if(filePath.Length == 0)
+            {
+                filePath = "index.html";
+            }
+            if (File.Exists(filePath))
+            {
+                byte[] fileBytes = File.ReadAllBytes(filePath);
+                string mimeType = GetMimeType(filePath);
+                string responseHeader = $"HTTP/1.1 200 OK\r\n" +
+                                        $"Content-Type: {mimeType}; charset=UTF-8\r\n" +
+                                        $"Content-Length: {fileBytes.Length}\r\n\r\n";
+
+                byte[] headerBytes = Encoding.UTF8.GetBytes(responseHeader);
+                stream.Write(headerBytes, 0, headerBytes.Length);
+                stream.Write(fileBytes, 0, fileBytes.Length);
+            }
+            else
+            {
+                string notFoundResponse = "HTTP/1.1 404 Not Found\r\n" +
+                                          "Content-Type: text/plain; charset=UTF-8\r\n\r\n" +
+                                          "Файлът не беше намерен!";
+                byte[] notFoundBytes = Encoding.UTF8.GetBytes(notFoundResponse);
+                stream.Write(notFoundBytes, 0, notFoundBytes.Length);
+            }
+        }
+
+        static string GetMimeType(string filePath)
+        {
+            string extension = Path.GetExtension(filePath).ToLower();
+
+            switch (extension)
+            {
+                case ".html": return "text/html";
+                case ".txt": return "text/plain";
+                case ".jpg": return "image/jpeg";
+                case ".png": return "image/png";
+                case ".pdf": return "application/pdf";
+                default: return "application/octet-stream"; // По подразбиране
+            }
+        }
+
+
+        //static void HandleClient(object obj)
+        //{
+        //    TcpClient client = (TcpClient)obj;
+        //    NetworkStream stream = client.GetStream();
+        //    StreamReader reader = new StreamReader(stream, Encoding.UTF8);
+
+        //    string request = reader.ReadLine();
+        //    Console.WriteLine("Получена заявка: " + request);
+
+        //    string filePath = "example.txt"; // Файлът, който ще се изпрати
+        //    if (File.Exists(filePath))
+        //    {
+        //        byte[] fileBytes = File.ReadAllBytes(filePath);
+        //        string responseHeader = "HTTP/1.1 200 OK\r\n" +
+        //                                "Content-Type: text/plain; charset=UTF-8\r\n" +
+        //                                $"Content-Length: {fileBytes.Length}\r\n\r\n";
+
+        //        byte[] headerBytes = Encoding.UTF8.GetBytes(responseHeader);
+        //        stream.Write(headerBytes, 0, headerBytes.Length);
+        //        stream.Write(fileBytes, 0, fileBytes.Length);
+        //    }
+        //    else
+        //    {
+        //        string notFoundResponse = "HTTP/1.1 404 Not Found\r\n" +
+        //                                  "Content-Type: text/plain; charset=UTF-8\r\n\r\n" +
+        //                                  "Файлът не беше намерен!";
+        //        byte[] notFoundBytes = Encoding.UTF8.GetBytes(notFoundResponse);
+        //        stream.Write(notFoundBytes, 0, notFoundBytes.Length);
+        //    }
+
+        //    client.Close();
+        //}
+
+        //static void HandleClient(object obj)
+        //{
+        //    TcpClient client = (TcpClient)obj;
+        //    NetworkStream stream = client.GetStream();
+        //    byte[] buffer = new byte[1024];
+        //    int bytesRead = stream.Read(buffer, 0, buffer.Length);
+        //    string request = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+        //    Console.WriteLine("Получена заявка:\n" + request);
+
+        //    //string response = "HTTP/1.1 200 OK\r\n" +
+        //    //                  "Content-Type: text/plain\r\n\r\n" +
+        //    //                  "Здравей, клиент!";
+        //    string response = "HTTP/1.1 200 OK\r\n" +
+        //             "Content-Type: text/plain; charset=UTF-8\r\n\r\n" +
+        //             "Здравей, клиент!";
+        //    byte[] responseData = Encoding.UTF8.GetBytes(response);
+        //    stream.Write(responseData, 0, responseData.Length);
+
+        //    client.Close();
+        //}
+    }
+
+}
