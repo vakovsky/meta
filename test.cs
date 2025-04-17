@@ -11,7 +11,7 @@ namespace ConsoleApp2
         static void Main(string[] args)
         {
             Console.WriteLine("Hello 123456");
-            Console.WriteLine("Hello -----------------------");
+            Console.WriteLine("Hello Demo");
 
         }
     }
