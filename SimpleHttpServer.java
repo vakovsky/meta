@@ -11,8 +11,8 @@ import java.nio.file.Paths;
 public class SimpleHttpServer {
 
     public static void main(String[] args) throws Exception {
-        // Създаваме сървър на порт 8080
-        HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+        // Създаваме сървър на порт 8050
+        HttpServer server = HttpServer.create(new InetSocketAddress(8050), 0);
         
         // Пътя към директорията с файловете
         String folderPath = "D:/v1/xml";
